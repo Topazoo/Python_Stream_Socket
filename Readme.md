@@ -9,7 +9,7 @@
 
 ## Overview
 
-An "Advantageous" Python WebSocket streaming server that constantly streams data from a passed generator and (optionally) reads a response from the client at the same time.
+An "Advantageous" Python WebSocket streaming server that constantly streams data from a passed generator and (optionally) reads a response from the client at the same time. The server runs on it's own thread so it won't block other applications (like Flask) or code running on the main thread.
 
 ## Installation
 
