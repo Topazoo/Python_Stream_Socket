@@ -13,9 +13,11 @@ class Socket_Stream_Server():
         --> [callable] generator - The generator function that supplies values to be
                                    streamed to the client.\n
         --> [callable] callback - A function to call if data is received from the client.
+        --> [bool] daemon - Runs the socket as a daemon (In the background but cleaned when the script completes).\n
     '''
 
-    def __init__(self, path:str = '127.0.0.1', port:int = 5001, generator:callable = None, callback:callable = None):
+    def __init__(self, path:str = '127.0.0.1', port:int = 5001, generator:callable = None, callback:callable = None, daemon:bool=False):
+        self.daemon = daemon
         self.event_loop = asyncio.get_event_loop()
         self.socket_server = websockets.serve(self.send, path, port)
         self.generator = generator if generator else self.sample_generator
@@ -41,7 +43,7 @@ class Socket_Stream_Server():
         '''
 
         t = threading.Thread(target=self.run_socket)
-        t.daemon = True                                 # Allows Keyboard Interrupts
+        t.daemon = self.daemon                                 # Allows Keyboard Interrupts
         t.start()
 
     async def send(self, websocket, path):
@@ -54,7 +56,7 @@ class Socket_Stream_Server():
             await websocket.send(json.dumps(data))
             try:
                 if self.callback:
-                    await asyncio.wait_for(self.receive(websocket), timeout=.01)
+                    await asyncio.wait_for(self.receive(websocket), timeout=.0001)
             except Exception as e:
                 continue
 
@@ -65,7 +67,7 @@ class Socket_Stream_Server():
 
         data = await websocket.recv()
         if data:
-            self.callback(data)
+            self.callback(json.loads(data))
 
     def sample_generator(self):
         '''
